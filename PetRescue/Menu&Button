@@ -1,0 +1,161 @@
+//// ---- Menu window, positioned on the left
+var menuWindow = Ti.UI.createWindow({
+    top:0,
+    left:0,
+    width:150
+});
+menuWindow.open();
+//// ---- Menu Table
+// Menu Titles
+var menuTitles = [
+    {title: 'Menu 1'},
+    {title: 'Menu 2'},
+    {title: 'Menu 3'},
+    {title: 'Menu 4'}
+];
+// Tableview
+var tableView = Ti.UI.createTableView({
+    data:menuTitles
+});
+menuWindow.add(tableView);
+
+//// ---- Window with navigationGroup
+var navWindow = Ti.UI.createWindow({
+    width:320 // Set the width of the sliding window to avoid cut out from animation
+});
+navWindow.open();
+// Main window
+var win = Ti.UI.createWindow({
+    title:'Main Window',
+    backgroundColor:'#28292c',
+    barColor:'#28292c'
+});
+// NavigationGroup
+var navGroup = Ti.UI.iPhone.createNavigationGroup({
+    window:win
+});
+navWindow.add(navGroup);
+// Top left button
+var menuButton = Ti.UI.createButton({
+    title:'Menu',
+    toggle:false // Custom property for menu toggle
+});
+win.setLeftNavButton(menuButton);
+
+menuButton.addEventListener('click', function(e){
+    // If the menu is opened
+    if(e.source.toggle == true){
+        navWindow.animate({
+            left:0,
+            duration:400,
+            curve:Ti.UI.ANIMATION_CURVE_EASE_IN_OUT
+        });
+        e.source.toggle = false;
+    }
+    // If the menu isn't opened
+    else{
+        navWindow.animate({
+            left:150,
+            duration:400,
+            curve:Ti.UI.ANIMATION_CURVE_EASE_IN_OUT
+        });
+        e.source.toggle  = true;
+    }
+});
+
+// Main window
+var win = Ti.UI.createWindow({
+    title:'Main Window',
+    backgroundColor:'#28292c',
+    barColor:'#28292c',
+    moving:false, // Custom property for movement
+    axis:0 // Custom property for X axis
+});
+
+win.addEventListener('touchstart', function(e){
+    // Get starting horizontal position
+    e.source.axis = parseInt(e.x);
+});
+
+win.addEventListener('touchmove', function(e){
+    // Subtracting current position to starting horizontal position
+    var coordinates = parseInt(e.globalPoint.x) - e.source.axis;
+    // Detecting movement after a 20px shift
+    if(coordinates > 20 || coordinates < -20){
+        e.source.moving = true;
+    }
+    // Locks the window so it doesn't move further than allowed
+    if(e.source.moving == true && coordinates <= 150 && coordinates >= 0){
+        // This will smooth the animation and make it less jumpy
+        navWindow.animate({
+            left:coordinates,
+            duration:20
+        });
+        // Defining coordinates as the final left position
+        navWindow.left = coordinates;
+    }
+});
+
+win.addEventListener('touchend', function(e){
+    // No longer moving the window
+    e.source.moving = false;
+    if(navWindow.left >= 75 && navWindow.left < 150){
+        // Repositioning the window to the right
+        navWindow.animate({
+            left:150,
+            duration:300
+        });
+        menuButton.toggle = true;
+    }else{
+        // Repositioning the window to the left
+        navWindow.animate({
+            left:0,
+            duration:300
+        });
+        menuButton.toggle = false;
+    }
+});
+
+	
+//create view
+var view = Ti.UI.createView();
+
+//create label
+var label = Ti.UI.createLabel({
+	text:"Pet Rescue",
+	height: 100,
+	width: 100,
+	top: 160,
+	color: 'blue'
+});
+
+//create button
+var button = Ti.UI.createButton({
+	title: 'Missing Pet!',
+	color: 'red',
+	height: 35,
+	width: 160,
+	top: 400,
+});
+
+//what happens when clicked
+
+//THIS NEEDS TO OPEN TO A NEW PAGE
+button.addEventListener('click', function(e){
+	alert('We have sent an email to all local animal shelters. Post your pet profile to twitter and facebook.');
+	Ti.API.info('User clicked on a button');
+});
+
+//add button view
+view.add(button);
+
+//add label to view
+view.add(label);
+
+//add view to window
+win.add(view);
+
+win.open();
+
+Ti.API.info('Width: ' + Ti.Platform.displayCaps.platformWidth);
+Ti.API.info('Height ' + Ti.Platform.displayCaps.platformHeight);
